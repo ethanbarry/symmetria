@@ -67,7 +67,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::quadrature::polynomial_interp::fn_eval;
+    use crate::quadrature::interpolation::fn_eval;
 
     use super::lagrange_interpolate;
 
