@@ -93,7 +93,7 @@ where
 /// use symmetria::quadrature::gaussian_kronrod_quad;
 /// use std::f64::consts;
 /// let f = |x: f64| x.cos();
-/// let val = gaussian_kronrod_quad(f, 0.0, (consts::PI / 2.0), 9).unwrap().0; // Answer is first elem.
+/// let val = gaussian_kronrod_quad(f, 0.0, (consts::PI / 2.0), 7).unwrap().0; // Answer is first elem.
 /// assert!((0.0 - val).abs() < 1.0e-9);
 /// ```
 pub fn gaussian_kronrod_quad<F>(f: F, a: f64, b: f64, n: u32) -> Result<(f64, f64), String>
