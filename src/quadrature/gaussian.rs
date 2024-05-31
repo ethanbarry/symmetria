@@ -1,5 +1,7 @@
 use std::{f64::consts, vec};
 
+use crate::functions::batch_eval;
+
 /// An *n*-point Gauss-Legendre integration method,
 /// using Newton-Raphson root-finding on Legendre polynomials.
 /// Accuracy rises with the square of *n*. Don't go crazy.
@@ -179,11 +181,61 @@ where
         + f * (func(scale * -x_3 + coscale) + func(scale * x_3 + coscale)) * scale
         + g * kron7_fnevals[2] * scale;
 
+    // Now we need to:
+    // - a: implement the helper function that does the recursion,
+    // - b: connect that function to this one,
+    // - c: and finally return the correct answer.
+
     if a < b {
         return kron13;
     } else {
         return -kron13;
     }
+}
+
+fn gkquad_recursive<F>(f: &F, a: f64, b: f64, fa: f64, fb: f64, iest: f64) -> f64
+where
+    F: Fn(f64) -> f64,
+{
+    let h = (b - a) / 2.0;
+    let m = (b + a) / 2.0;
+    let alpha = (2.0 / 3.0_f64).sqrt();
+    let beta = 1.0 / 5.0_f64.sqrt();
+    // Our new evaluation points...
+    let mll = m - alpha * h;
+    let ml = m - beta * h;
+    let mr = m + beta * h;
+    let mrr = m + alpha * h;
+    let x = vec![mll, ml, m, mr, mrr];
+    let y = batch_eval(&f, &x);
+
+    let fmll = y[0];
+    let fml = y[1];
+    let fm = y[2];
+    let fmr = y[3];
+    let fmrr = y[4];
+
+    let i2 = (h / 6.0) * (fa + fb + 5.0 * (fml + fmr));
+    let i1 =
+        (h / 1470.) * (77. * (fa + fb) + 432. * (fmll + fmrr) + 625. * (fml + fmr) + 672. * fm);
+
+    let q = if iest + (i1 - i2) == iest || mll <= a || b <= mrr {
+        if m <= a || b <= m {
+            // At this point, we have exhausted the machine's precision.
+            // We should handle this somehow...
+        }
+        i1
+    } else {
+        // Sum of the integrals on the ranges [a, mll], [mll, ml], [ml, m], [m, mr], [mr, mrr], [mrr, b];
+        gkquad_recursive(f, a, mll, fa, fmll, iest)
+            + gkquad_recursive(f, mll, ml, fmll, fml, iest)
+            + gkquad_recursive(f, ml, m, fml, fm, iest)
+            + gkquad_recursive(f, m, mr, fm, fmr, iest)
+            + gkquad_recursive(f, mr, mrr, fmr, fmrr, iest)
+            + gkquad_recursive(f, mrr, b, fmrr, fb, iest)
+    };
+    println!("{}", q);
+    q
 }
 
 #[cfg(test)]
