@@ -6,8 +6,8 @@ to learn. Instead of abstracting, this crate will use simple `f64` variables, an
 duplicate work if/when `f32` versions are needed.
 
 Currently, this crate provides the following procedures:
-- Gaussian-Legendre quadrature of order *n*.
-- Gaussian-Lobatto-Kronrod adaptive quadrature to machine precision.
+- Gauss-Legendre quadrature of order *n*.
+- Gauss-Lobatto-Kronrod adaptive quadrature to machine precision.
 - Lagrange interpolation
 - Batch evaluation of functions
 
