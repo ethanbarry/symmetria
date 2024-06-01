@@ -100,6 +100,10 @@ pub fn gaussian_kronrod_quad<F>(func: F, a: f64, b: f64, n: u32) -> f64
 where
     F: Fn(f64) -> f64,
 {
+    // This algorithm was adopted from the paper
+    // "Adaptive Quadrature --- Revisited" by Walter Gander and Walter Gautschi.
+    // published in BIT Numerical Mathematics, vol. 40, No. 1, pp. 84-101.
+
     // Scale the bounds of integration a and b to [-1, 1].
     // This converts
     // \int_a^b f(x)dx to \int_{-1}^1 f(sx + c)sdx
