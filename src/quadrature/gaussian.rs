@@ -76,27 +76,25 @@ where
 
 /// An adaptive 4-point Gauss-Lobatto quadrature routine.
 /// Kronrod's Rule is used to reduce the computations needed,
-/// while using a 13-point Kronrod quadrature for error checking.
+/// while using 7- & 13-point Kronrod quadratures for error checking.
 ///
 /// ## Inputs
 /// - f: The integrand (must be integrable on \[a,b\])
 /// - a: The lower bound of integration.
 /// - b: The upper bound of integration.
 ///
-/// NOTE: The algorithm does not assume a < b.
+/// NOTE: The algorithm assumes a < b.
 /// ## Outputs
-/// A result of `f64` or an error message inside a `String`.
-/// The value should be an approximation of the integral within the given
-/// tolerance.
+/// An `f64` value containing the definite integral calculated to machine precision.
 /// ## Examples
 /// ```rust
 /// use symmetria::quadrature::gaussian_kronrod_quad;
 /// use std::f64::consts;
 /// let f = |x: f64| x.cos();
-/// let val = gaussian_kronrod_quad(f, 0.0, (consts::PI / 2.0), 7); // Answer is first elem.
-/// assert!((1.0 - val).abs() < 1.0e-9);
+/// let val = gaussian_kronrod_quad(f, 0.0, (consts::PI / 2.0));
+/// assert!((1.0 - val).abs() < 1.0e-17);
 /// ```
-pub fn gaussian_kronrod_quad<F>(func: F, a: f64, b: f64, n: u32) -> f64
+pub fn gaussian_kronrod_quad<F>(func: F, a: f64, b: f64) -> f64
 where
     F: Fn(f64) -> f64,
 {
@@ -117,8 +115,8 @@ where
     let coscale = (b + a) / 2.0;
     // Now, f must always be evaluated at scale * x + coscale, not simply x, and the answer multiplied by scale.
 
-    let gl4_weights = vec![1.0 / 6.0, 5.0 / 6.0];
-    let gl4_fnevals = vec![
+    let gl4_weights = [1.0 / 6.0, 5.0 / 6.0];
+    let gl4_fnevals = [
         func(scale * -1.0 + coscale),
         func(scale * 1.0 + coscale),
         func(scale * -1.0 / 5.0_f64.sqrt() + coscale),
@@ -130,7 +128,7 @@ where
     let gl4 = gl4_weights[0] * ((gl4_fnevals[0] + gl4_fnevals[1]) * scale)
         + gl4_weights[1] * ((gl4_fnevals[2] + gl4_fnevals[3]) * scale);
 
-    let kron7_fnevals = vec![
+    let kron7_fnevals = [
         func(scale * -((2. / 3.0_f64).sqrt()) + coscale),
         func(scale * (2. / 3.0_f64).sqrt() + coscale),
         func(coscale), // scale * 0.0 is 0.
@@ -165,17 +163,17 @@ where
     // x_1 = .94288241569547971905635175843185720232,
     // x_2 = .64185334234578130578123554132903188354,
     // x_3 = .23638319966214988028222377349205292599.
-    let a_weight = 0.015827191973480183087169986733305510591;
-    let b_weight = 0.094273840218850045531282505077108171960;
-    let c = 0.15507198733658539625363597980210298680;
-    let d = 0.18882157396018245442000533937297167125;
-    let e = 0.19977340522685852679206802206648840246;
-    let f = 0.22492646533333952701601768799639508076;
-    let g = 0.24261107190140773379964095790325635233;
+    let a_weight = 0.015_827_191_973_480_183;
+    let b_weight = 0.094_273_840_218_850_05;
+    let c = 0.155_071_987_336_585_4;
+    let d = 0.188_821_573_960_182_45;
+    let e = 0.199_773_405_226_858_52;
+    let f = 0.224_926_465_333_339_51;
+    let g = 0.242_611_071_901_407_74;
 
-    let x_1 = 0.94288241569547971905635175843185720232;
-    let x_2 = 0.64185334234578130578123554132903188354;
-    let x_3 = 0.23638319966214988028222377349205292599;
+    let x_1 = 0.942_882_415_695_479_7;
+    let x_2 = 0.641_853_342_345_781_3;
+    let x_3 = 0.236_383_199_662_149_88;
 
     let kron13 = a_weight * (gl4_fnevals[0] + gl4_fnevals[1]) * scale
         + b_weight * (func(scale * -x_1 + coscale) + func(scale * x_1 + coscale)) * scale
@@ -185,26 +183,22 @@ where
         + f * (func(scale * -x_3 + coscale) + func(scale * x_3 + coscale)) * scale
         + g * kron7_fnevals[2] * scale;
 
-    // Now we need to:
-    // - a: implement the helper function that does the recursion,
-    // - b: connect that function to this one,
-    // - c: and finally return the correct answer.
+    let x = vec![a, b];
+    let y = batch_eval(&func, &x);
 
-    if a < b {
-        return kron13;
-    } else {
-        return -kron13;
-    }
+    gkquad_recursive(&func, a, b, y[0], y[1], kron13)
 }
 
+/// A helper function for gaussian_kronrod_quad().
 fn gkquad_recursive<F>(f: &F, a: f64, b: f64, fa: f64, fb: f64, iest: f64) -> f64
 where
     F: Fn(f64) -> f64,
 {
     let h = (b - a) / 2.0;
-    let m = (b + a) / 2.0;
-    let alpha = (2.0 / 3.0_f64).sqrt();
-    let beta = 1.0 / 5.0_f64.sqrt();
+    let m = (a + b) / 2.0;
+    let alpha = f64::sqrt(2.0 / 3.0);
+    let beta = 1.0 / f64::sqrt(5.0);
+
     // Our new evaluation points...
     let mll = m - alpha * h;
     let ml = m - beta * h;
@@ -223,7 +217,7 @@ where
     let i1 =
         (h / 1470.) * (77. * (fa + fb) + 432. * (fmll + fmrr) + 625. * (fml + fmr) + 672. * fm);
 
-    let q = if iest + (i1 - i2) == iest || mll <= a || b <= mrr {
+    if iest + (i1 - i2) == iest || mll <= a || b <= mrr {
         if m <= a || b <= m {
             // At this point, we have exhausted the machine's precision.
             // We should handle this somehow...
@@ -237,9 +231,7 @@ where
             + gkquad_recursive(f, m, mr, fm, fmr, iest)
             + gkquad_recursive(f, mr, mrr, fmr, fmrr, iest)
             + gkquad_recursive(f, mrr, b, fmrr, fb, iest)
-    };
-    println!("{}", q);
-    q
+    }
 }
 
 #[cfg(test)]
@@ -259,8 +251,17 @@ mod test {
     fn check_gaussian_kronrod_quad() {
         // Test case from here: <https://phys.libretexts.org/@go/page/8094?pdf>
         // \int_0^1 \frac{ x^4 }{ \sqrt{ 2(1+x) }} dx ≈ 0.108 709 465.
+        // More exact answer calculated by WolframAlpha.
         let f = |x: f64| (x * x * x * x) / (2.0 * (1.0 + x * x)).sqrt();
-        let v = gaussian_kronrod_quad(f, 1.0, 0.0, 7);
-        assert!((v - 0.108_709_465).abs() < 1.0e-9);
+        let v = gaussian_kronrod_quad(f, 0.0, 1.0);
+        assert!((v - 0.1087_0946_5052_58644).abs() < 1.0e-17);
+    }
+
+    #[test]
+    fn check_gaussian_kronrod_quad_2() {
+        // Test case result computed by WolframAlpha.
+        let f = |x: f64| 1.0 / (1.0 + x);
+        let v = gaussian_kronrod_quad(f, 0.0, 1.0);
+        assert!((v - 0.6931_4718_0559_945).abs() <= 1.0e-15);
     }
 }

@@ -16,5 +16,5 @@ pub fn batch_eval<F>(f: &F, batch: &[f64]) -> Vec<f64>
 where
     F: Fn(f64) -> f64,
 {
-    batch.into_iter().map(|val| f(*val)).collect()
+    batch.iter().map(|val| f(*val)).collect()
 }

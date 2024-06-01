@@ -15,15 +15,7 @@
 /// ## Conditions
 /// Inputs must satisfy the following:
 /// - a < b
-pub fn lagrange_interpolate<F>(f: F, x: f64, a: f64, b: f64, steps: u32) -> Result<f64, String>
-where
-    F: Fn(f64) -> f64,
-{
-    if a >= b {
-        return Err(String::from("Input bounds invalid - a greater than b."));
-    }
-    let table = fn_eval(f, a, b, steps);
-
+pub fn lagrange_interpolate(x: f64, table: &[(f64, f64)]) -> f64 {
     let n = table.len();
     let mut sum = 0.0;
 
@@ -45,7 +37,7 @@ where
             sum += y_i * product;
         }
     }
-    Ok(sum)
+    sum
 }
 
 /// Generates a table of points to use in the interpolation.
@@ -82,11 +74,9 @@ mod test {
     #[test]
     fn check_lagrange_interpolate() {
         let f = |x: f64| x.sin();
-        let a = 0.0;
-        let b = 0.5;
+        let table = fn_eval(f, 0.0, 2.0, 5);
         let x = 0.2;
-        let steps = 4;
-        let res = lagrange_interpolate(f, x, a, b, steps).unwrap();
+        let res = lagrange_interpolate(x, &table);
 
         assert!((res - x.sin()).abs() <= 1e-3);
     }

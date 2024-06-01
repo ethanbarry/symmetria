@@ -6,8 +6,9 @@ to learn. Instead of abstracting, this crate will use simple `f64` variables, an
 duplicate work if/when `f32` versions are needed.
 
 Currently, this crate provides the following procedures:
-- Gaussian quadrature
-- Gaussian-Lobatto-Kronrod adaptive quadrature
+- Gaussian-Legendre quadrature of order *n*.
+- Gaussian-Lobatto-Kronrod adaptive quadrature to machine precision.
+- Lagrange interpolation
 - Batch evaluation of functions
 
 I hope to eventually provide all the routines found in the NSWC Library of Mathematics Subroutines,
