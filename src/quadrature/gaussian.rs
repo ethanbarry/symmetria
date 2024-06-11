@@ -64,14 +64,14 @@ where
         weights[i as usize] = 2.0 / ((1.0 - z * z) * p_prime * p_prime);
         weights[(n - 1 - i) as usize] = weights[i as usize];
     }
-
+    roots = roots.iter().map(|r| s * r + c).collect();
     // \int_{-1}^1 f(sx + c)sdx = \sum_0^n w_i * f(x_i) where w_i is the weight and x_i
     // is the ith root of the nth Legendre polynomial.
     for i in 0..n as usize {
-        res += weights[i] * f(s * roots[i] + c) * s;
+        res += weights[i] * f(roots[i]);
     }
 
-    res
+    res * s
 }
 
 /// An adaptive 4-point Gauss-Lobatto quadrature routine.
@@ -243,8 +243,9 @@ mod test {
         // Test case from here: <https://phys.libretexts.org/@go/page/8094?pdf>
         // \int_0^1 \frac{ x^4 }{ \sqrt{ 2(1+x) }} dx ≈ 0.108 709 465.
         let f = |x: f64| (x * x * x * x) / (2.0 * (1.0 + x * x)).sqrt();
-        let v = gaussian_quad(f, 0.0, 1.0, 7);
-        assert!((v - 0.108_709_465).abs() < 1.0e-9);
+        let v = gaussian_quad(f, 0.0, 1.0, 8);
+        dbg!(&v);
+        assert!((v - 0.1087_0946_5052_58644).abs() < 1.0e-10);
     }
 
     #[test]
