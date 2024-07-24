@@ -183,10 +183,14 @@ where
         + f * (func(scale * -x_3 + coscale) + func(scale * x_3 + coscale)) * scale
         + g * kron7_fnevals[2] * scale;
 
-    let x = vec![a, b];
-    let y = batch_eval(&func, &x);
+    if (kron7 - gl4).abs() > 1.0e-17 && (kron13 - kron7).abs() > 1.0e-17 {
+        let x = vec![a, b];
+        let y = batch_eval(&func, &x);
 
-    gkquad_recursive(&func, a, b, y[0], y[1], kron13)
+        gkquad_recursive(&func, a, b, y[0], y[1], kron13)
+    } else {
+        kron13
+    }
 }
 
 /// A helper function for gaussian_kronrod_quad().
@@ -244,7 +248,6 @@ mod test {
         // \int_0^1 \frac{ x^4 }{ \sqrt{ 2(1+x) }} dx ≈ 0.108 709 465.
         let f = |x: f64| (x * x * x * x) / (2.0 * (1.0 + x * x)).sqrt();
         let v = gaussian_quad(f, 0.0, 1.0, 8);
-        dbg!(&v);
         assert!((v - 0.1087_0946_5052_58644).abs() < 1.0e-10);
     }
 
