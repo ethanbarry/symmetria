@@ -40,35 +40,22 @@ pub fn lagrange_interpolate(x: f64, table: &[(f64, f64)]) -> f64 {
     sum
 }
 
-/// Generates a table of points to use in the interpolation.
-fn fn_eval<F>(f: F, a: f64, b: f64, steps: u32) -> Vec<(f64, f64)>
-where
-    F: Fn(f64) -> f64,
-{
-    let mut res: Vec<(f64, f64)> = vec![];
-    let delta_x = (b - a) / steps as f64;
-
-    for i in 0..steps {
-        let x_val = a + delta_x * i as f64;
-        let y_val = f(x_val);
-        res.push((x_val, y_val));
-    }
-
-    res
-}
-
 #[cfg(test)]
 mod test {
-    use super::fn_eval;
     use super::lagrange_interpolate;
 
-    #[test]
-    fn check_fn_eval() {
-        let f = |x: f64| x + 2_f64;
-        let a = 0_f64;
-        let b = 3_f64;
-        let expected = vec![(0.0, 2.0), (1.0, 3.0), (2.0, 4.0)];
-        assert_eq!(expected, fn_eval(f, a, b, 3));
+    /// Generates a table of points to use in the interpolation.
+    fn fn_eval(f: impl Fn(f64) -> f64, a: f64, b: f64, steps: u32) -> Vec<(f64, f64)> {
+        let mut res: Vec<(f64, f64)> = vec![];
+        let delta_x = (b - a) / steps as f64;
+
+        for i in 0..steps {
+            let x_val = a + delta_x * i as f64;
+            let y_val = f(x_val);
+            res.push((x_val, y_val));
+        }
+
+        res
     }
 
     #[test]

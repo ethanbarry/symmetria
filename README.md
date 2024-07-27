@@ -9,8 +9,10 @@ Currently, this crate provides the following procedures:
 - Gauss-Legendre quadrature of order *n*.
 - Gauss-Lobatto-Kronrod adaptive quadrature to machine precision.
 - Lagrange interpolation
-- Bisection method of root-finding
 - Batch evaluation of functions
+- Bisection method of root-finding
+- Complex roots of quadratics
+- Complex roots of cubics
 
 I hope to eventually provide all the routines found in the NSWC Library of Mathematics Subroutines,
 published by the United States Naval Surface Warfare Center (1990 version), which is an established

@@ -19,10 +19,7 @@ use crate::functions::batch_eval;
 /// let val = gaussian_quad(f, 0.0, consts::PI, 7);
 /// assert!((2.0 - val).abs() < 1.0e-9);
 /// ```
-pub fn gaussian_quad<F>(f: F, a: f64, b: f64, n: u32) -> f64
-where
-    F: Fn(f64) -> f64,
-{
+pub fn gaussian_quad(f: impl Fn(f64) -> f64, a: f64, b: f64, n: u32) -> f64 {
     const NEWTON_PRECISION: f64 = 1.0e-10;
     let mut res = 0.0;
     // Scale the bounds of integration a and b to [-1, 1].
@@ -94,10 +91,7 @@ where
 /// let val = gaussian_kronrod_quad(f, 0.0, (consts::PI / 2.0));
 /// assert!((1.0 - val).abs() < 1.0e-17);
 /// ```
-pub fn gaussian_kronrod_quad<F>(func: F, a: f64, b: f64) -> f64
-where
-    F: Fn(f64) -> f64,
-{
+pub fn gaussian_kronrod_quad(func: impl Fn(f64) -> f64, a: f64, b: f64) -> f64 {
     // This algorithm was adopted from the paper
     // "Adaptive Quadrature --- Revisited" by Walter Gander and Walter Gautschi.
     // published in BIT Numerical Mathematics, vol. 40, No. 1, pp. 84-101.
@@ -194,10 +188,7 @@ where
 }
 
 /// A helper function for gaussian_kronrod_quad().
-fn gkquad_recursive<F>(f: &F, a: f64, b: f64, fa: f64, fb: f64, iest: f64) -> f64
-where
-    F: Fn(f64) -> f64,
-{
+fn gkquad_recursive(f: &impl Fn(f64) -> f64, a: f64, b: f64, fa: f64, fb: f64, iest: f64) -> f64 {
     let h = (b - a) / 2.0;
     let m = (a + b) / 2.0;
     let alpha = f64::sqrt(2.0 / 3.0);
