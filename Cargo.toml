@@ -2,6 +2,9 @@
 name = "symmetria"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "The simple numerical library."
+repository = "https://github.com/ethanbarry/symmetria"
 
 [dependencies]
 num-complex = "0.4.6"
