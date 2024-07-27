@@ -1,4 +1,4 @@
-use num_complex::{Complex64, ComplexFloat};
+use num_complex::Complex64;
 
 /// Solve a quadratic equation.
 /// ## Inputs
