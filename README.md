@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="2100" height="1450" src="./Wordmark.png">
+  <img src="./Wordmark.png">
 </p>
 
 I intend for this crate to become a useful source of ready-to-use numerical algorithms.
